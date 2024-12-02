@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -24,7 +23,10 @@
       width: 100%;
       height: 100%;
       border: none;
-      z-index: 1;
+      position: absolute; /* Garantir que o iframe não cubra os outros elementos */
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
 
     /* Alinha os botões no canto superior direito */
@@ -35,7 +37,7 @@
       display: flex;
       flex-direction: row;
       gap: 10px;
-      z-index: 1000;
+      z-index: 10; /* Garantir que o botão fique acima do iframe */
     }
 
     /* Botão de conectar a MetaMask */
@@ -127,7 +129,42 @@
   <!-- Iframe contendo o link -->
   <iframe src="https://brasileirao-coin-o60ndxm.gamma.site/" width="100%" height="100%" frameborder="0"></iframe>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <script>
+    // Endereço do contrato do token (substitua pelo token real)
+    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1"; 
+    const tokenABI = [
+      {
+        "constant": true,
+        "inputs": [{ "name": "_owner", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "name": "balance", "type": "uint256" }],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{ "name": "", "type": "uint8" }],
+        "type": "function"
+      }
+    ];
+
+    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
+
+    // Função para mudar para a Polygon Mainnet
+    async function switchToPolygonMainnet() {
+      try {
+        await ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: polygonMainnetChainId }],
+        });
+        console.log("Conectado à Polygon Mainnet!");
+      } catch (error) {
+        console.error("Erro ao tentar mudar para a Polygon Mainnet:", error);
+      }
+    }
+
     // Verifica se a MetaMask está instalada
     if (typeof window.ethereum !== 'undefined') {
       console.log('MetaMask está instalada!');
@@ -139,9 +176,17 @@
 
       connectButton.addEventListener('click', async () => {
         try {
+          // Verificar se a MetaMask está na Polygon Mainnet
+          const chainId = await ethereum.request({ method: 'eth_chainId' });
+
+          if (chainId !== polygonMainnetChainId) {
+            await switchToPolygonMainnet(); // Tenta mudar para Polygon Mainnet
+            return;
+          }
+
           // Solicita a conexão da carteira MetaMask
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-
+          
           // Exibe a mensagem de login bem-sucedido
           walletAddress.innerText = `Login concluído com sucesso por meio da carteira: ${accounts[0]}`;
           loginInfo.style.display = 'flex';
@@ -150,6 +195,19 @@
           // Muda o texto do botão para "Carteira conectada"
           connectButton.innerText = 'Carteira conectada';
           connectButton.style.backgroundColor = '#4CAF50';  // Cor de fundo para quando a carteira estiver conectada
+
+          // Configura o provedor e o contrato
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+
+          // Consulta o saldo de tokens
+          const balance = await tokenContract.balanceOf(accounts[0]);
+          const decimals = await tokenContract.decimals();
+          const adjustedBalance = balance / Math.pow(10, decimals);
+
+          // Exibe o saldo
+          console.log("Saldo de tokens:", adjustedBalance.toFixed(4));
 
         } catch (error) {
           console.error('Erro ao conectar:', error);
