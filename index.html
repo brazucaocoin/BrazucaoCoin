@@ -110,6 +110,24 @@
       0% { opacity: 0; }
       100% { opacity: 1; }
     }
+
+    /* Caixa para exibir o saldo de criptomoeda */
+    #balanceInfo {
+      background-color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 16px;
+      color: #333;
+      display: none;
+      min-width: 150px;
+      text-align: center;
+      z-index: 10; /* Garantir que a caixa de saldo fique visível */
+    }
+
+    #balanceInfo p {
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -117,6 +135,9 @@
   <!-- Botões no canto superior direito -->
   <div class="button-container">
     <button id="connectButton">Conecte sua carteira</button>
+    <div id="balanceInfo">
+      <p>Saldo de Token: <span id="cryptoBalance">0</span></p>
+    </div>
   </div>
 
   <!-- Aba de login -->
@@ -150,9 +171,8 @@
       }
     ];
 
-    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
-
     // Função para mudar para a Polygon Mainnet
+    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
     async function switchToPolygonMainnet() {
       try {
         await ethereum.request({
@@ -173,6 +193,8 @@
       const loginInfo = document.getElementById('loginInfo');
       const walletAddress = document.getElementById('walletAddress');
       const closeButton = document.getElementById('closeButton');
+      const balanceInfo = document.getElementById('balanceInfo');
+      const cryptoBalance = document.getElementById('cryptoBalance');
 
       connectButton.addEventListener('click', async () => {
         try {
@@ -207,7 +229,8 @@
           const adjustedBalance = balance / Math.pow(10, decimals);
 
           // Exibe o saldo
-          console.log("Saldo de tokens:", adjustedBalance.toFixed(4));
+          cryptoBalance.innerText = adjustedBalance.toFixed(4);
+          balanceInfo.style.display = 'block';
 
         } catch (error) {
           console.error('Erro ao conectar:', error);
