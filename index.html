@@ -175,12 +175,26 @@
     const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
     async function switchToPolygonMainnet() {
       try {
+        // Solicita a troca para a Polygon Mainnet
         await ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: polygonMainnetChainId }],
         });
         console.log("Conectado à Polygon Mainnet!");
       } catch (error) {
+        if (error.code === 4902) {
+          // Caso a Polygon Mainnet não esteja na MetaMask, adiciona ela
+          await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: polygonMainnetChainId,
+              chainName: 'Polygon Mainnet',
+              nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+              rpcUrls: ['https://rpc-mainnet.maticvigil.com'],
+              blockExplorerUrls: ['https://polygonscan.com/'],
+            }],
+          });
+        }
         console.error("Erro ao tentar mudar para a Polygon Mainnet:", error);
       }
     }
@@ -202,6 +216,7 @@
           const chainId = await ethereum.request({ method: 'eth_chainId' });
 
           if (chainId !== polygonMainnetChainId) {
+            alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
             await switchToPolygonMainnet(); // Tenta mudar para Polygon Mainnet
             return;
           }
@@ -233,7 +248,7 @@
           balanceInfo.style.display = 'block';
 
         } catch (error) {
-          console.error('Erro ao conectar:', error);
+          console.error('Erro ao conectar ou recuperar o saldo:', error);
         }
       });
 
