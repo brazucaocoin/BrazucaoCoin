@@ -75,6 +75,24 @@
       background-color: #45a049;
     }
 
+    /* Caixa para exibir o saldo de criptomoeda */
+    #balanceInfo {
+      background-color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 16px;
+      color: #333;
+      display: none; /* Inicialmente oculta */
+      min-width: 150px;
+      text-align: center;
+      z-index: 10; /* Garantir que a caixa de saldo fique visível */
+    }
+
+    #balanceInfo p {
+      margin: 0;
+    }
+
     /* Formulário de login (quando o login for concluído) */
     #loginInfo {
       display: none;
@@ -130,24 +148,6 @@
       100% { opacity: 1; }
     }
 
-    /* Caixa para exibir o saldo de criptomoeda */
-    #balanceInfo {
-      background-color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      font-size: 16px;
-      color: #333;
-      display: none;
-      min-width: 150px;
-      text-align: center;
-      z-index: 10; /* Garantir que a caixa de saldo fique visível */
-    }
-
-    #balanceInfo p {
-      margin: 0;
-    }
-
     /* Animação de fade-in */
     #walletInfo.fadeIn {
       animation: fadeIn 0.5s ease-out;
@@ -188,6 +188,7 @@
   <script>
     const walletInfo = document.getElementById('walletInfo');
     const connectButton = document.getElementById('connectButton');
+    const balanceInfo = document.getElementById('balanceInfo');
 
     // Função para mudar para a Polygon Mainnet
     const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
@@ -242,6 +243,9 @@
           connectButton.innerText = 'Carteira conectada';
           connectButton.style.backgroundColor = '#4CAF50';  // Cor de fundo para quando a carteira estiver conectada
           connectButton.disabled = true; // Desativa o botão após a conexão
+
+          // Exibe a caixa de saldo
+          balanceInfo.style.display = 'block';
 
         } catch (error) {
           console.error('Erro ao conectar ou recuperar o saldo:', error);
