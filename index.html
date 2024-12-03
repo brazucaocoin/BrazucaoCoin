@@ -162,17 +162,17 @@
           connectButton.style.backgroundColor = '#4CAF50';
           connectButton.disabled = true;
 
-          // Conecta ao contrato do token usando ethers.js
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
-
-          // Verifica se a carteira está na rede Polygon
+          // Verifica se a rede é a Polygon Mainnet
           const chainId = await ethereum.request({ method: 'eth_chainId' });
           if (chainId !== polygonMainnetChainId) {
-            alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
+            console.log("Mudando para Polygon Mainnet...");
             await switchToPolygonMainnet();
             return;
           }
+
+          // Conecta ao contrato do token usando ethers.js
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
 
           // Recupera o saldo do token
           const balance = await tokenContract.balanceOf(account);
@@ -225,4 +225,5 @@
     // Evento de clique para conectar a MetaMask
     connectButton.addEventListener('click', connectMetaMask);
   </script>
-</
+</body>
+</html>
