@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetaMask Login</title>
+  <title>MetaMask - Stake BRZ</title>
   <style>
     body {
       margin: 0;
@@ -11,205 +11,171 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background-color: #f4f4f9;
-      font-family: 'Arial', sans-serif;
-      flex-direction: column;
+      min-height: 100vh;
       background-image: url('https://img.freepik.com/fotos-gratis/fundo-de-papel-de-parede-colorido-embacado-artistico_58702-8367.jpg');
       background-size: cover;
       background-attachment: fixed;
       background-position: center;
+      font-family: 'Arial', sans-serif;
+      color: #ffffff;
     }
 
-    #walletInfo {
-      position: fixed;
-      top: 220px;
-      left: 20px;
-      background-color: rgba(255, 255, 255, 0.7);
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      font-size: 16px;
+    .container {
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 15px;
+      padding: 20px 30px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
       text-align: center;
-      z-index: 10;
+      max-width: 400px;
+      width: 100%;
+      animation: fadeIn 1.2s ease-in-out;
     }
 
-    .button-container {
-      position: fixed;
-      top: 40px;
-      right: 20px;
-      display: flex;
-      flex-direction: row;
-      gap: 10px;
-      z-index: 10;
+    h1 {
+      color: #4CAF50;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
     }
 
-    #connectButton {
-      background-color: #4CAF50;
-      color: white;
-      font-size: 16px;
-      padding: 12px 25px;
+    button {
+      background: #4CAF50;
       border: none;
       border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: white;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    #connectButton:hover {
+    button:hover {
       background-color: #45a049;
+      transform: translateY(-2px);
     }
 
-    #balanceInfo {
-      background-color: white;
-      padding: 12px 20px;
+    .info-box {
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      font-size: 16px;
-      color: #333;
-      display: none;
-      min-width: 200px;
-      text-align: center;
-      z-index: 10;
-    }
-
-    #balanceInfo p {
-      margin: 0;
-    }
-
-    #transactionForm {
+      padding: 10px 15px;
       margin-top: 20px;
-      padding: 20px;
-      background-color: rgba(255, 255, 255, 0.8);
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: left;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .info-box p {
+      margin: 10px 0;
       display: flex;
-      flex-direction: column;
-      width: 300px;
-      text-align: center;
+      justify-content: space-between;
     }
 
-    #transactionForm input {
-      margin-bottom: 10px;
+    .info-box span {
+      font-weight: bold;
+      color: #4CAF50;
+    }
+
+    input {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid #4CAF50;
+      color: #ffffff;
       padding: 10px;
-      font-size: 14px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    #transactionButton {
-      background-color: #4CAF50;
-      color: white;
-      padding: 12px;
       font-size: 16px;
-      border: none;
       border-radius: 5px;
-      cursor: pointer;
+      width: calc(100% - 20px);
+      margin-bottom: 15px;
     }
 
-    #transactionButton:hover {
-      background-color: #45a049;
+    input:focus {
+      outline: none;
+      border-color: #45a049;
     }
 
-    #errorMessage {
-      color: red;
-      font-size: 16px;
-      margin-top: 10px;
-      text-align: center;
-      display: block;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 3s ease-out, visibility 3s ease-out;
+    #notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+      animation: fadeInOut 3s ease-in-out;
     }
 
-    #errorMessage.show {
-      opacity: 1;
-      visibility: visible;
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
     }
 
-    .dots::after {
-      content: '';
-      animation: dots 1.5s infinite;
-    }
-
-    @keyframes dots {
-      0% { content: ''; }
-      33% { content: '.'; }
-      66% { content: '..'; }
-      100% { content: '...'; }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   </style>
 </head>
 <body>
-
-  <div id="walletInfo">
-    Conta: Esperando conexão <span class="dots"></span>
-  </div>
-
-  <div class="button-container">
-    <button id="connectButton">Conecte sua carteira</button>
-  </div>
-
-  <div id="balanceInfo">
-    <p>Saldo de BRZ: <span id="cryptoBalance">0</span></p>
-  </div>
-
-  <!-- Formulário de Transação -->
-  <div id="transactionForm" style="display: none;">
-    <h3>Realizar Transferência</h3>
-    <input type="number" id="transferAmount" placeholder="Quantos tokens?" min="1000" step="1000" required>
+  <div id="notification">Você não está na Polygon Mainnet. Conectando...</div>
+  <div class="container">
+    <h1>BRZ Stake</h1>
+    <div class="info-box">
+      <p>Carteira: <span id="walletInfo">Aguardando conexão...</span></p>
+      <p>Saldo de BRZ: <span id="cryptoBalance">0</span></p>
+    </div>
+    <input type="number" id="transferAmount" placeholder="Quantidade (múltiplos de 1.000)" min="1000" step="1000" required>
     <input type="text" id="recipientAddress" value="0x8180c6Ab37625c259F35503899e0eC66446Dcf1D" readonly>
-    <button id="transactionButton">Confirmar Transação</button>
-  </div>
-
-  <div id="errorMessage">
-    <p>Erro ao conectar ou recuperar o saldo! Verifique sua MetaMask e rede.</p>
+    <button id="connectButton">Conectar Carteira</button>
+    <button id="transactionButton" style="margin-top: 15px;">Confirmar Transação</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
   <script>
     const connectButton = document.getElementById('connectButton');
-    const balanceInfo = document.getElementById('balanceInfo');
-    const cryptoBalance = document.getElementById('cryptoBalance');
-    const errorMessage = document.getElementById('errorMessage');
-    const walletInfo = document.getElementById('walletInfo');
-    const transactionForm = document.getElementById('transactionForm');
     const transactionButton = document.getElementById('transactionButton');
+    const walletInfo = document.getElementById('walletInfo');
+    const cryptoBalance = document.getElementById('cryptoBalance');
     const transferAmount = document.getElementById('transferAmount');
     const recipientAddress = document.getElementById('recipientAddress');
+    const notification = document.getElementById('notification');
 
-    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1"; // BRZ Token Address
-    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
+    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
+    const polygonMainnetChainId = "0x89";
 
-    // Conectar a MetaMask
     async function connectMetaMask() {
       if (typeof window.ethereum !== 'undefined') {
         try {
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
           const account = accounts[0];
-          walletInfo.innerText = `Conta: ${account.substring(0, 7)}...${account.substring(account.length - 5)}`;
-          connectButton.innerText = 'Carteira conectada';
+          walletInfo.innerText = `${account.substring(0, 7)}...${account.substring(account.length - 5)}`;
+          connectButton.innerText = 'Carteira Conectada';
           connectButton.style.backgroundColor = '#4CAF50';
 
           const chainId = await ethereum.request({ method: 'eth_chainId' });
           if (chainId !== polygonMainnetChainId) {
-            alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
+            showNotification("Você não está na Polygon Mainnet. Conectando...");
             await switchToPolygonMainnet();
-            return;
           }
 
-          // Exibe o saldo
           await getBalance();
         } catch (error) {
-          console.error("Erro ao conectar:", error);
-          errorMessage.classList.add('show');
-          setTimeout(() => { errorMessage.classList.remove('show'); }, 3000);
+          alert("Erro ao conectar à MetaMask!");
+          console.error(error);
         }
       } else {
-        alert('Por favor, instale o MetaMask!');
+        alert('Por favor, instale a MetaMask para usar esta funcionalidade!');
       }
     }
 
-    // Função para mudar para a Polygon Mainnet
     async function switchToPolygonMainnet() {
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
@@ -217,7 +183,14 @@
       });
     }
 
-    // Função para mostrar o saldo do token BRZ
+    function showNotification(message) {
+      notification.innerText = message;
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
     async function getBalance() {
       const web3 = new Web3(window.ethereum);
       const tokenContract = new web3.eth.Contract([
@@ -227,24 +200,21 @@
           "name": "balanceOf",
           "outputs": [{ "name": "balance", "type": "uint256" }],
           "type": "function"
-        },
+        }
       ], tokenAddress);
+
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       const balance = await tokenContract.methods.balanceOf(accounts[0]).call();
       const adjustedBalance = Web3.utils.fromWei(balance, 'ether');
       cryptoBalance.innerText = adjustedBalance.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-      balanceInfo.style.display = 'block';
-      transactionForm.style.display = 'block';
     }
 
-    // Função para realizar a transferência
     async function handleTransaction() {
       const amount = transferAmount.value;
       const recipient = recipientAddress.value;
 
-      // Verificação se a quantidade é múltiplo de 1.000
       if (amount % 1000 !== 0) {
-        alert("A quantidade de tokens deve ser múltipla de 1.000.");
+        alert("A quantidade deve ser múltipla de 1.000.");
         return;
       }
 
@@ -269,8 +239,8 @@
         await tokenContract.methods.transfer(recipient, amountInWei).send({ from: accounts[0] });
         alert("Transferência realizada com sucesso!");
       } catch (error) {
-        console.error("Erro ao realizar a transferência:", error);
-        alert("Erro ao realizar a transferência!");
+        alert("Erro ao realizar a transferência.");
+        console.error(error);
       }
     }
 
