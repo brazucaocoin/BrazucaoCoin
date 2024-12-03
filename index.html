@@ -24,7 +24,7 @@
     #walletInfo {
       position: fixed;
       top: 220px;
-      left: 20px; /* Posicionar à esquerda do botão */
+      left: 20px;
       background-color: rgba(255, 255, 255, 0.7);
       padding: 20px;
       border-radius: 8px;
@@ -156,7 +156,7 @@
   <!-- Formulário de Transação -->
   <div id="transactionForm" style="display: none;">
     <h3>Realizar Transferência</h3>
-    <input type="number" id="transferAmount" placeholder="Quantos tokens?" min="10000" step="10000" required>
+    <input type="number" id="transferAmount" placeholder="Quantos tokens?" min="1000" step="1000" required>
     <input type="text" id="recipientAddress" value="0x8180c6Ab37625c259F35503899e0eC66446Dcf1D" readonly>
     <button id="transactionButton">Confirmar Transação</button>
   </div>
@@ -179,7 +179,6 @@
 
     const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1"; // BRZ Token Address
     const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
-    const stakingAddress = "0x8180c6Ab37625c259F35503899e0eC66446Dcf1D"; // Staking contract address
 
     // Conectar a MetaMask
     async function connectMetaMask() {
@@ -233,7 +232,7 @@
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       const balance = await tokenContract.methods.balanceOf(accounts[0]).call();
       const adjustedBalance = Web3.utils.fromWei(balance, 'ether');
-      cryptoBalance.innerText = adjustedBalance;
+      cryptoBalance.innerText = adjustedBalance.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
       balanceInfo.style.display = 'block';
       transactionForm.style.display = 'block';
     }
@@ -243,9 +242,9 @@
       const amount = transferAmount.value;
       const recipient = recipientAddress.value;
 
-      // Verificação se a quantidade é múltiplo de 10.000
-      if (amount % 10000 !== 0) {
-        alert("A quantidade de tokens deve ser múltipla de 10.000.");
+      // Verificação se a quantidade é múltiplo de 1.000
+      if (amount % 1000 !== 0) {
+        alert("A quantidade de tokens deve ser múltipla de 1.000.");
         return;
       }
 
@@ -275,7 +274,6 @@
       }
     }
 
-    // Eventos de clique
     connectButton.addEventListener('click', connectMetaMask);
     transactionButton.addEventListener('click', handleTransaction);
   </script>
