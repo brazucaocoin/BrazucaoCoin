@@ -93,6 +93,19 @@
       text-align: center;
       display: none;
     }
+
+    /* Notificação de rede */
+    #networkMessage {
+      background-color: #ffcc00;
+      color: black;
+      padding: 10px;
+      margin: 10px;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+      font-size: 16px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -115,6 +128,11 @@
     <p>Erro ao conectar ou recuperar o saldo! Verifique sua MetaMask e rede.</p>
   </div>
 
+  <!-- Notificação de rede -->
+  <div id="networkMessage">
+    Você não está na Polygon Mainnet. Mudando para a rede Polygon...
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <script>
     // Variáveis DOM
@@ -123,6 +141,7 @@
     const balanceInfo = document.getElementById('balanceInfo');
     const cryptoBalance = document.getElementById('cryptoBalance');
     const errorMessage = document.getElementById('errorMessage');
+    const networkMessage = document.getElementById('networkMessage');
 
     // Endereço do contrato do token BRZ
     const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
@@ -165,7 +184,10 @@
           // Verifica se a rede é a Polygon Mainnet
           const chainId = await ethereum.request({ method: 'eth_chainId' });
           if (chainId !== polygonMainnetChainId) {
-            console.log("Mudando para Polygon Mainnet...");
+            // Exibe a notificação para informar que a rede será mudada
+            networkMessage.style.display = 'block';
+
+            // Espera a rede ser mudada
             await switchToPolygonMainnet();
             return;
           }
@@ -185,11 +207,13 @@
           cryptoBalance.innerText = adjustedBalance.toFixed(4);
           balanceInfo.style.display = 'block';
           errorMessage.style.display = 'none';  // Esconde a mensagem de erro
+          networkMessage.style.display = 'none'; // Esconde a mensagem de rede
 
         } catch (error) {
           console.error("Erro ao conectar ou recuperar o saldo:", error);
           errorMessage.style.display = 'block';  // Exibe a mensagem de erro
           balanceInfo.style.display = 'none';  // Esconde a caixa de saldo em caso de erro
+          networkMessage.style.display = 'none'; // Esconde a notificação de rede
         }
       } else {
         alert('Por favor, instale o MetaMask!');
@@ -204,6 +228,7 @@
           params: [{ chainId: polygonMainnetChainId }],
         });
         console.log("Conectado à Polygon Mainnet!");
+        networkMessage.innerText = "Você está agora na Polygon Mainnet!";
       } catch (error) {
         if (error.code === 4902) {
           await ethereum.request({
