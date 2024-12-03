@@ -24,7 +24,7 @@
     #walletInfo {
       position: fixed;
       top: 220px;
-      left: 110px;
+      left: 20px; /* Posicionar à esquerda do botão */
       background-color: rgba(255, 255, 255, 0.7);
       padding: 20px;
       border-radius: 8px;
@@ -85,6 +85,7 @@
       display: flex;
       flex-direction: column;
       width: 300px;
+      text-align: center;
     }
 
     #transactionForm input {
@@ -152,10 +153,11 @@
     <p>Saldo de BRZ: <span id="cryptoBalance">0</span></p>
   </div>
 
+  <!-- Formulário de Transação -->
   <div id="transactionForm" style="display: none;">
     <h3>Realizar Transferência</h3>
-    <input type="number" id="transferAmount" placeholder="Quantos tokens?" min="1" required>
-    <input type="text" id="recipientAddress" placeholder="Endereço de destino" required>
+    <input type="number" id="transferAmount" placeholder="Quantos tokens?" min="10000" step="10000" required>
+    <input type="text" id="recipientAddress" value="0x8180c6...Dcf1D" readonly>
     <button id="transactionButton">Confirmar Transação</button>
   </div>
 
@@ -179,7 +181,7 @@
     const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
     const stakingAddress = "0x8180c6Ab37625c259F35503899e0eC66446Dcf1D"; // Staking contract address
 
-    // Connect MetaMask
+    // Conectar a MetaMask
     async function connectMetaMask() {
       if (typeof window.ethereum !== 'undefined') {
         try {
@@ -195,6 +197,9 @@
             await switchToPolygonMainnet();
             return;
           }
+
+          // Exibe o saldo
+          await getBalance();
         } catch (error) {
           console.error("Erro ao conectar:", error);
           errorMessage.classList.add('show');
@@ -230,15 +235,17 @@
       const adjustedBalance = Web3.utils.fromWei(balance, 'ether');
       cryptoBalance.innerText = adjustedBalance;
       balanceInfo.style.display = 'block';
+      transactionForm.style.display = 'block';
     }
 
-    // Função para transferir tokens BRZ
+    // Função para realizar a transferência
     async function handleTransaction() {
       const amount = transferAmount.value;
       const recipient = recipientAddress.value;
 
-      if (!amount || !recipient) {
-        alert("Por favor, preencha todos os campos.");
+      // Verificação se a quantidade é múltiplo de 10.000
+      if (amount % 10000 !== 0) {
+        alert("A quantidade de tokens deve ser múltipla de 10.000.");
         return;
       }
 
@@ -253,7 +260,7 @@
           "name": "transfer",
           "outputs": [{ "name": "", "type": "bool" }],
           "type": "function"
-        },
+        }
       ], tokenAddress);
 
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
@@ -268,15 +275,9 @@
       }
     }
 
-    // Evento de clique para conectar a MetaMask
+    // Eventos de clique
     connectButton.addEventListener('click', connectMetaMask);
-
-    // Evento de clique para mostrar o saldo
-    connectButton.addEventListener('click', getBalance);
-
-    // Evento de clique para realizar a transação
     transactionButton.addEventListener('click', handleTransaction);
-
   </script>
 </body>
 </html>
