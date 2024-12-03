@@ -21,16 +21,6 @@
       background-position: center;
     }
 
-    #topBar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 115px;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 5;
-    }
-
     #walletInfo {
       position: fixed;
       top: 220px;
@@ -69,21 +59,37 @@
       background-color: #45a049;
     }
 
-    #balanceInfo {
-      background-color: white;
-      padding: 12px 20px;
+    #stakeForm {
+      margin-top: 50px;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      font-size: 16px;
-      color: #333;
-      display: none;
-      min-width: 150px;
-      text-align: center;
-      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      width: 300px;
     }
 
-    #balanceInfo p {
-      margin: 0;
+    #stakeForm input, #stakeForm select {
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #stakeButton {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #stakeButton:hover {
+      background-color: #45a049;
     }
 
     #errorMessage {
@@ -102,113 +108,80 @@
       visibility: visible;
     }
 
-    /* Animação de pontos suspensivos */
-    .loading-text {
-      font-weight: bold;
-    }
-
+    /* Animação dos três pontos */
     .dots::after {
-      content: "";
+      content: '';
       animation: dots 1.5s infinite;
     }
 
     @keyframes dots {
-      0% { content: "."; }
-      33% { content: ".."; }
-      66% { content: "..."; }
-      100% { content: "."; }
+      0% { content: ''; }
+      33% { content: '.'; }
+      66% { content: '..'; }
+      100% { content: '...'; }
     }
 
   </style>
 </head>
 <body>
 
-  <div id="topBar"></div>
-
-  <div id="walletInfo" class="loading-text">
+  <div id="walletInfo">
     Conta: Esperando conexão <span class="dots"></span>
   </div>
 
   <div class="button-container">
     <button id="connectButton">Conecte sua carteira</button>
-    <div id="balanceInfo">
-      <p>Saldo de Token BRZ: <span id="cryptoBalance">0</span></p>
-    </div>
   </div>
 
-  <!-- Mensagem de erro -->
+  <div id="stakeForm" style="display: none;">
+    <h3>Faça o seu Stake!</h3>
+    <input type="number" id="amount" placeholder="Quantos tokens?" min="1" required>
+    <input type="text" id="address" placeholder="Endereço" required>
+    <input type="text" id="number" placeholder="Número" required>
+    <input type="text" id="city" placeholder="Cidade" required>
+    <input type="text" id="state" placeholder="Estado" required>
+    <input type="text" id="cep" placeholder="CEP" required>
+    <input type="text" id="team" placeholder="Time do coração" required>
+    <button id="stakeButton">Confirmar Stake</button>
+  </div>
+
   <div id="errorMessage">
     <p>Erro ao conectar ou recuperar o saldo! Verifique sua MetaMask e rede.</p>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
   <script>
-    const walletInfo = document.getElementById('walletInfo');
     const connectButton = document.getElementById('connectButton');
-    const balanceInfo = document.getElementById('balanceInfo');
-    const cryptoBalance = document.getElementById('cryptoBalance');
+    const stakeForm = document.getElementById('stakeForm');
+    const stakeButton = document.getElementById('stakeButton');
     const errorMessage = document.getElementById('errorMessage');
+    const walletInfo = document.getElementById('walletInfo');
 
-    // Endereço do contrato do token BRZ
     const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
-    const tokenABI = [{
-      "constant": true,
-      "inputs": [{ "name": "_owner", "type": "address" }],
-      "name": "balanceOf",
-      "outputs": [{ "name": "balance", "type": "uint256" }],
-      "type": "function"
-    }];
+    const polygonMainnetChainId = "0x89";
+    const stakingAddress = "0x8180c6Ab37625c259F35503899e0eC66446Dcf1D";
 
-    const polygonMainnetChainId = "0x89"; // Polygon Mainnet
-
-    // Função para conectar a MetaMask e obter saldo
+    // Connect MetaMask
     async function connectMetaMask() {
       if (typeof window.ethereum !== 'undefined') {
         try {
-          // Solicita a conexão com a MetaMask
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
           const account = accounts[0];
-
-          // Exibe o endereço da carteira conectada, com os primeiros 7 e os últimos 5 caracteres
-          const formattedAddress = `${account.substring(0, 7)}...${account.substring(account.length - 5)}`;
-          walletInfo.innerText = `Carteira conectada: ${formattedAddress}`;
-          walletInfo.classList.add('fadeIn');
-
-          // Muda o texto do botão para "Carteira conectada"
+          walletInfo.innerText = `Carteira conectada: ${account.substring(0, 7)}...${account.substring(account.length - 5)}`;
+          stakeForm.style.display = 'block';
           connectButton.innerText = 'Carteira conectada';
           connectButton.style.backgroundColor = '#4CAF50';
-          connectButton.disabled = true;
 
-          // Verifica se a rede é a Polygon Mainnet
           const chainId = await ethereum.request({ method: 'eth_chainId' });
           if (chainId !== polygonMainnetChainId) {
             alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
             await switchToPolygonMainnet();
             return;
           }
-
-          // Conecta ao Web3 com o provedor MetaMask
-          const web3 = new Web3(window.ethereum);
-
-          // Conecta ao contrato do token BRZ
-          const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
-          const balance = await tokenContract.methods.balanceOf(account).call();
-          const adjustedBalance = balance / Math.pow(10, 18); // Ajusta para o número de decimais do token
-
-          // Exibe o saldo de tokens BRZ
-          cryptoBalance.innerText = adjustedBalance.toFixed(4);
-          balanceInfo.style.display = 'block';
-          errorMessage.style.display = 'none';  // Esconde a mensagem de erro
-
         } catch (error) {
-          console.error("Erro ao conectar ou recuperar o saldo:", error);
-          errorMessage.classList.add('show');  // Exibe a mensagem de erro
-          balanceInfo.style.display = 'none';  // Esconde a caixa de saldo em caso de erro
-          
-          // Desaparece após 3 segundos
-          setTimeout(() => {
-            errorMessage.classList.remove('show');
-          }, 3000);
+          console.error("Erro ao conectar:", error);
+          errorMessage.classList.add('show');
+          setTimeout(() => { errorMessage.classList.remove('show'); }, 3000);
         }
       } else {
         alert('Por favor, instale o MetaMask!');
@@ -217,32 +190,49 @@
 
     // Função para mudar para a Polygon Mainnet
     async function switchToPolygonMainnet() {
-      try {
-        await ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: polygonMainnetChainId }],
-        });
-        console.log("Conectado à Polygon Mainnet!");
-      } catch (error) {
-        if (error.code === 4902) {
-          await ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: polygonMainnetChainId,
-              chainName: 'Polygon Mainnet',
-              nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-              rpcUrls: ['https://rpc-mainnet.maticvigil.com'],
-              blockExplorerUrls: ['https://polygonscan.com/'],
-            }],
-          });
-        } else {
-          console.error("Erro ao tentar mudar para a Polygon Mainnet:", error);
-        }
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: polygonMainnetChainId }],
+      });
+    }
+
+    // Função para enviar os tokens para o stake
+    async function handleStake() {
+      // Validação dos campos obrigatórios
+      const amount = document.getElementById('amount').value;
+      const address = document.getElementById('address').value;
+      const number = document.getElementById('number').value;
+      const city = document.getElementById('city').value;
+      const state = document.getElementById('state').value;
+      const cep = document.getElementById('cep').value;
+      const team = document.getElementById('team').value;
+
+      if (!amount || !address || !number || !city || !state || !cep || !team) {
+        alert("Por favor, preencha todos os campos.");
+        return;
       }
+
+      // Informações do usuário (isso seria salvo no banco de dados)
+      const userInfo = { address, number, city, state, cep, team };
+
+      // Lógica para transferir os tokens para o endereço de staking
+      const web3 = new Web3(window.ethereum);
+      const tokenContract = new web3.eth.Contract([{ "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" }], tokenAddress);
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+
+      const amountInWei = web3.utils.toWei(amount, 'ether');
+      await tokenContract.methods.transfer(stakingAddress, amountInWei).send({ from: accounts[0] });
+
+      // Salvar as informações do usuário (aqui você conectaria ao seu banco de dados)
+      console.log("Informações do usuário para o stake:", userInfo);
+
+      alert("Stake realizado com sucesso!");
     }
 
     // Evento de clique para conectar a MetaMask
     connectButton.addEventListener('click', connectMetaMask);
+    // Evento de clique para realizar o stake
+    stakeButton.addEventListener('click', handleStake);
   </script>
 </body>
 </html>
