@@ -86,31 +86,47 @@
       margin: 0;
     }
 
-    /* Mensagem de erro com animação */
     #errorMessage {
       color: red;
       font-size: 16px;
       margin-top: 10px;
       text-align: center;
       display: block;
-      opacity: 0; /* Inicialmente invisível */
-      visibility: hidden; /* Invisível até ser ativada */
-      transition: opacity 3s ease-out, visibility 3s ease-out; /* Transição suave de opacidade e visibilidade */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 3s ease-out, visibility 3s ease-out;
     }
 
-    /* Exibição do erro após o tempo de transição */
     #errorMessage.show {
       opacity: 1;
       visibility: visible;
     }
+
+    /* Animação de pontos suspensivos */
+    .loading-text {
+      font-weight: bold;
+    }
+
+    .dots::after {
+      content: "";
+      animation: dots 1.5s infinite;
+    }
+
+    @keyframes dots {
+      0% { content: "."; }
+      33% { content: ".."; }
+      66% { content: "..."; }
+      100% { content: "."; }
+    }
+
   </style>
 </head>
 <body>
 
   <div id="topBar"></div>
 
-  <div id="walletInfo">
-    Conecte sua carteira
+  <div id="walletInfo" class="loading-text">
+    Conta: Esperando conexão <span class="dots"></span>
   </div>
 
   <div class="button-container">
@@ -153,8 +169,9 @@
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
           const account = accounts[0];
 
-          // Exibe o endereço da carteira conectada
-          walletInfo.innerText = `Carteira conectada: ${account}`;
+          // Exibe o endereço da carteira conectada, com os primeiros 7 e os últimos 5 caracteres
+          const formattedAddress = `${account.substring(0, 7)}...${account.substring(account.length - 5)}`;
+          walletInfo.innerText = `Carteira conectada: ${formattedAddress}`;
           walletInfo.classList.add('fadeIn');
 
           // Muda o texto do botão para "Carteira conectada"
