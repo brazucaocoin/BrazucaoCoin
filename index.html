@@ -72,10 +72,10 @@
       background-color: white;
       padding: 12px 20px;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px rgba(1, 1, 1, 0.2);
       font-size: 16px;
       color: #333;
-      display: none;
+      display: on;
       min-width: 200px;
       text-align: center;
       z-index: 10;
@@ -83,28 +83,6 @@
 
     #balanceInfo p {
       margin: 0;
-    }
-
-    /* Estilo de erro */
-    #errorMessage {
-      color: red;
-      font-size: 16px;
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    /* Notificação de rede */
-    #networkMessage {
-      background-color: #ffcc00;
-      color: black;
-      padding: 10px;
-      margin: 10px;
-      border-radius: 8px;
-      text-align: center;
-      display: none;
-      font-size: 16px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -123,28 +101,14 @@
     </div>
   </div>
 
-  <!-- Mensagem de erro -->
-  <div id="errorMessage">
-    <p>Erro ao conectar ou recuperar o saldo! Verifique sua MetaMask e rede.</p>
-  </div>
-
-  <!-- Notificação de rede -->
-  <div id="networkMessage">
-    Você não está na Polygon Mainnet. Mudando para a rede Polygon...
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <script>
-    // Variáveis DOM
     const walletInfo = document.getElementById('walletInfo');
     const connectButton = document.getElementById('connectButton');
     const balanceInfo = document.getElementById('balanceInfo');
     const cryptoBalance = document.getElementById('cryptoBalance');
-    const errorMessage = document.getElementById('errorMessage');
-    const networkMessage = document.getElementById('networkMessage');
 
-    // Endereço do contrato do token BRZ
-    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
+    const tokenAddress = "0x455e53cbb86018ac2b8092fdcd39d8444affc3f6";
     const tokenABI = [
       {
         "constant": true,
@@ -162,65 +126,8 @@
       }
     ];
 
-    const polygonMainnetChainId = "0x89"; // Polygon Mainnet
+    const polygonMainnetChainId = "0x89";
 
-    // Função para conectar a MetaMask e obter saldo
-    async function connectMetaMask() {
-      if (typeof window.ethereum !== 'undefined') {
-        try {
-          // Solicita a conexão com a MetaMask
-          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          const account = accounts[0];
-
-          // Exibe o endereço da carteira conectada
-          walletInfo.innerText = `Carteira conectada: ${account}`;
-          walletInfo.classList.add('fadeIn');
-
-          // Muda o texto do botão para "Carteira conectada"
-          connectButton.innerText = 'Carteira conectada';
-          connectButton.style.backgroundColor = '#4CAF50';
-          connectButton.disabled = true;
-
-          // Verifica se a rede é a Polygon Mainnet
-          const chainId = await ethereum.request({ method: 'eth_chainId' });
-          if (chainId !== polygonMainnetChainId) {
-            // Exibe a notificação para informar que a rede será mudada
-            networkMessage.style.display = 'block';
-
-            // Espera a rede ser mudada
-            await switchToPolygonMainnet();
-            return;
-          }
-
-          // Conecta ao contrato do token usando ethers.js
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
-
-          // Recupera o saldo do token
-          const balance = await tokenContract.balanceOf(account);
-          const decimals = await tokenContract.decimals();
-
-          const adjustedBalance = balance / Math.pow(10, decimals);
-          console.log("Saldo de Token BRZ:", adjustedBalance);
-
-          // Exibe o saldo de tokens BRZ na tela
-          cryptoBalance.innerText = adjustedBalance.toFixed(4);
-          balanceInfo.style.display = 'block';
-          errorMessage.style.display = 'none';  // Esconde a mensagem de erro
-          networkMessage.style.display = 'none'; // Esconde a mensagem de rede
-
-        } catch (error) {
-          console.error("Erro ao conectar ou recuperar o saldo:", error);
-          errorMessage.style.display = 'block';  // Exibe a mensagem de erro
-          balanceInfo.style.display = 'none';  // Esconde a caixa de saldo em caso de erro
-          networkMessage.style.display = 'none'; // Esconde a notificação de rede
-        }
-      } else {
-        alert('Por favor, instale o MetaMask!');
-      }
-    }
-
-    // Função para mudar para a Polygon Mainnet
     async function switchToPolygonMainnet() {
       try {
         await ethereum.request({
@@ -228,7 +135,6 @@
           params: [{ chainId: polygonMainnetChainId }],
         });
         console.log("Conectado à Polygon Mainnet!");
-        networkMessage.innerText = "Você está agora na Polygon Mainnet!";
       } catch (error) {
         if (error.code === 4902) {
           await ethereum.request({
@@ -247,8 +153,58 @@
       }
     }
 
-    // Evento de clique para conectar a MetaMask
-    connectButton.addEventListener('click', connectMetaMask);
+    if (typeof window.ethereum !== 'undefined') {
+      console.log('MetaMask está instalada!');
+
+      connectButton.addEventListener('click', async () => {
+        try {
+          const chainId = await ethereum.request({ method: 'eth_chainId' });
+
+          if (chainId !== polygonMainnetChainId) {
+            console.log("Mudando para Polygon Mainnet...");
+            await switchToPolygonMainnet();
+            return;
+          }
+
+          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+
+          console.log("Conta conectada:", accounts[0]);
+          walletInfo.innerText = `Carteira conectada: ${accounts[0]}`;
+          walletInfo.classList.add('fadeIn');
+
+          connectButton.innerText = 'Carteira conectada';
+          connectButton.style.backgroundColor = '#4CAF50';
+          connectButton.disabled = true;
+
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
+
+          console.log("Contrato de token configurado:", tokenContract);
+
+          try {
+            const balance = await tokenContract.balanceOf(accounts[0]);
+            console.log("Saldo bruto do token:", balance.toString());
+
+            const decimals = await tokenContract.decimals();
+            console.log("Decimais do token:", decimals);
+
+            const adjustedBalance = balance / Math.pow(10, decimals);
+            console.log("Saldo ajustado:", adjustedBalance);
+
+            cryptoBalance.innerText = adjustedBalance.toFixed(4);
+            balanceInfo.style.display = 'block';
+          } catch (tokenError) {
+            console.error("Erro ao consultar saldo do token:", tokenError);
+            balanceInfo.style.display = 'block';
+            cryptoBalance.innerText = "N/A";
+          }
+        } catch (error) {
+          console.error("Erro ao conectar ou recuperar informações:", error);
+        }
+      });
+    } else {
+      alert('Por favor, instale o MetaMask!');
+    }
   </script>
 </body>
 </html>
