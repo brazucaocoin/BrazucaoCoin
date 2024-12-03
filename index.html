@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMask Login</title>
   <style>
-    /* Estilos gerais da página */
     body {
       margin: 0;
       padding: 0;
@@ -16,19 +15,27 @@
       background-color: #f4f4f9;
       font-family: 'Arial', sans-serif;
       flex-direction: column;
-      overflow: hidden;
-      background-image: url('https://img.freepik.com/fotos-gratis/fundo-de-papel-de-parede-colorido-embacado-artistico_58702-8367.jpg'); /* Substitua pela URL da sua imagem de fundo */
+      background-image: url('https://img.freepik.com/fotos-gratis/fundo-de-papel-de-parede-colorido-embacado-artistico_58702-8367.jpg');
       background-size: cover;
       background-attachment: fixed;
       background-position: center;
     }
 
-    /* Caixa de informações sobre a carteira */
+    #topBar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 115px;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 5;
+    }
+
     #walletInfo {
       position: fixed;
-      top: 220px; /* 13 centímetros da parte superior da tela */
-      left: 110px; /* 13 centímetros da margem esquerda */
-      background-color: rgba(255, 255, 255, 0.7); /* Caixa com 70% de transparência */
+      top: 220px;
+      left: 110px;
+      background-color: rgba(255, 255, 255, 0.7);
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -37,18 +44,16 @@
       z-index: 10;
     }
 
-    /* Alinha os botões no canto superior direito */
     .button-container {
       position: fixed;
-      top: 20px;
+      top: 40px;
       right: 20px;
       display: flex;
       flex-direction: row;
       gap: 10px;
-      z-index: 10; /* Garantir que o botão fique acima do plano de fundo */
+      z-index: 10;
     }
 
-    /* Botão de conectar a MetaMask */
     #connectButton {
       background-color: #4CAF50;
       color: white;
@@ -64,62 +69,6 @@
       background-color: #45a049;
     }
 
-    /* Formulário de login (quando o login for concluído) */
-    #loginInfo {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background-color: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-      width: 390px; /* Aumentando o fundo em 30% */
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 500;
-    }
-
-    #loginInfo h2 {
-      margin-bottom: 10px;
-      color: #333;
-    }
-
-    #loginInfo p {
-      font-size: 16px;
-      color: #4CAF50;
-      font-weight: bold;
-    }
-
-    /* Estilo para o botão de fechar */
-    #closeButton {
-      background-color: #ff4d4d;
-      color: white;
-      font-size: 16px;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    #closeButton:hover {
-      background-color: #ff0000;
-    }
-
-    /* Efeitos de transição */
-    #loginInfo.fadeIn {
-      animation: fadeIn 0.5s ease-out;
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    /* Caixa para exibir o saldo de criptomoeda */
     #balanceInfo {
       background-color: white;
       padding: 12px 20px;
@@ -130,53 +79,126 @@
       display: none;
       min-width: 150px;
       text-align: center;
-      z-index: 10; /* Garantir que a caixa de saldo fique visível */
+      z-index: 10;
     }
 
     #balanceInfo p {
       margin: 0;
     }
 
-    /* Animação de fade-in */
-    #walletInfo.fadeIn {
-      animation: fadeIn 0.5s ease-out;
+    /* Mensagem de erro com animação */
+    #errorMessage {
+      color: red;
+      font-size: 16px;
+      margin-top: 10px;
+      text-align: center;
+      display: block;
+      opacity: 0; /* Inicialmente invisível */
+      visibility: hidden; /* Invisível até ser ativada */
+      transition: opacity 3s ease-out, visibility 3s ease-out; /* Transição suave de opacidade e visibilidade */
     }
 
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
+    /* Exibição do erro após o tempo de transição */
+    #errorMessage.show {
+      opacity: 1;
+      visibility: visible;
     }
   </style>
 </head>
 <body>
 
-  <!-- Caixa de informações sobre a carteira -->
+  <div id="topBar"></div>
+
   <div id="walletInfo">
     Conecte sua carteira
   </div>
 
-  <!-- Botões no canto superior direito -->
   <div class="button-container">
     <button id="connectButton">Conecte sua carteira</button>
     <div id="balanceInfo">
-      <p>Saldo de Token: <span id="cryptoBalance">0</span></p>
+      <p>Saldo de Token BRZ: <span id="cryptoBalance">0</span></p>
     </div>
   </div>
 
-  <!-- Aba de login -->
-  <div id="loginInfo">
-    <h2>Login concluído com sucesso!</h2>
-    <p id="walletAddress"></p>
-    <button id="closeButton">Fechar</button>
+  <!-- Mensagem de erro -->
+  <div id="errorMessage">
+    <p>Erro ao conectar ou recuperar o saldo! Verifique sua MetaMask e rede.</p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script> <!-- Biblioteca ethers.js -->
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
   <script>
     const walletInfo = document.getElementById('walletInfo');
     const connectButton = document.getElementById('connectButton');
+    const balanceInfo = document.getElementById('balanceInfo');
+    const cryptoBalance = document.getElementById('cryptoBalance');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Endereço do contrato do token BRZ
+    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
+    const tokenABI = [{
+      "constant": true,
+      "inputs": [{ "name": "_owner", "type": "address" }],
+      "name": "balanceOf",
+      "outputs": [{ "name": "balance", "type": "uint256" }],
+      "type": "function"
+    }];
+
+    const polygonMainnetChainId = "0x89"; // Polygon Mainnet
+
+    // Função para conectar a MetaMask e obter saldo
+    async function connectMetaMask() {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          // Solicita a conexão com a MetaMask
+          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+          const account = accounts[0];
+
+          // Exibe o endereço da carteira conectada
+          walletInfo.innerText = `Carteira conectada: ${account}`;
+          walletInfo.classList.add('fadeIn');
+
+          // Muda o texto do botão para "Carteira conectada"
+          connectButton.innerText = 'Carteira conectada';
+          connectButton.style.backgroundColor = '#4CAF50';
+          connectButton.disabled = true;
+
+          // Verifica se a rede é a Polygon Mainnet
+          const chainId = await ethereum.request({ method: 'eth_chainId' });
+          if (chainId !== polygonMainnetChainId) {
+            alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
+            await switchToPolygonMainnet();
+            return;
+          }
+
+          // Conecta ao Web3 com o provedor MetaMask
+          const web3 = new Web3(window.ethereum);
+
+          // Conecta ao contrato do token BRZ
+          const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+          const balance = await tokenContract.methods.balanceOf(account).call();
+          const adjustedBalance = balance / Math.pow(10, 18); // Ajusta para o número de decimais do token
+
+          // Exibe o saldo de tokens BRZ
+          cryptoBalance.innerText = adjustedBalance.toFixed(4);
+          balanceInfo.style.display = 'block';
+          errorMessage.style.display = 'none';  // Esconde a mensagem de erro
+
+        } catch (error) {
+          console.error("Erro ao conectar ou recuperar o saldo:", error);
+          errorMessage.classList.add('show');  // Exibe a mensagem de erro
+          balanceInfo.style.display = 'none';  // Esconde a caixa de saldo em caso de erro
+          
+          // Desaparece após 3 segundos
+          setTimeout(() => {
+            errorMessage.classList.remove('show');
+          }, 3000);
+        }
+      } else {
+        alert('Por favor, instale o MetaMask!');
+      }
+    }
 
     // Função para mudar para a Polygon Mainnet
-    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
     async function switchToPolygonMainnet() {
       try {
         await ethereum.request({
@@ -186,7 +208,6 @@
         console.log("Conectado à Polygon Mainnet!");
       } catch (error) {
         if (error.code === 4902) {
-          // Caso a Polygon Mainnet não esteja na MetaMask, adiciona ela
           await ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -197,45 +218,14 @@
               blockExplorerUrls: ['https://polygonscan.com/'],
             }],
           });
+        } else {
+          console.error("Erro ao tentar mudar para a Polygon Mainnet:", error);
         }
-        console.error("Erro ao tentar mudar para a Polygon Mainnet:", error);
       }
     }
 
-    // Verifica se a MetaMask está instalada
-    if (typeof window.ethereum !== 'undefined') {
-      console.log('MetaMask está instalada!');
-
-      connectButton.addEventListener('click', async () => {
-        try {
-          // Verificar se a MetaMask está na Polygon Mainnet
-          const chainId = await ethereum.request({ method: 'eth_chainId' });
-
-          if (chainId !== polygonMainnetChainId) {
-            alert("Você não está na Polygon Mainnet. Mudando para a Polygon Mainnet...");
-            await switchToPolygonMainnet(); // Tenta mudar para Polygon Mainnet
-            return;
-          }
-
-          // Solicita a conexão da carteira MetaMask
-          const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-          
-          // Exibe a mensagem com a carteira conectada
-          walletInfo.innerText = `Carteira conectada: ${accounts[0]}`;
-          walletInfo.classList.add('fadeIn'); // Adiciona a animação de transição
-
-          // Muda o texto do botão para "Carteira conectada"
-          connectButton.innerText = 'Carteira conectada';
-          connectButton.style.backgroundColor = '#4CAF50';  // Cor de fundo para quando a carteira estiver conectada
-          connectButton.disabled = true; // Desativa o botão após a conexão
-
-        } catch (error) {
-          console.error('Erro ao conectar ou recuperar o saldo:', error);
-        }
-      });
-    } else {
-      alert('Por favor, instale o MetaMask para usar essa funcionalidade!');
-    }
+    // Evento de clique para conectar a MetaMask
+    connectButton.addEventListener('click', connectMetaMask);
   </script>
 </body>
 </html>
