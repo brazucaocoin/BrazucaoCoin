@@ -72,10 +72,10 @@
       background-color: white;
       padding: 12px 20px;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(1, 1, 1, 0.2);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       font-size: 16px;
       color: #333;
-      display: on;
+      display: ;
       min-width: 200px;
       text-align: center;
       z-index: 10;
@@ -108,7 +108,12 @@
     const balanceInfo = document.getElementById('balanceInfo');
     const cryptoBalance = document.getElementById('cryptoBalance');
 
-    const tokenAddress = "0x455e53cbb86018ac2b8092fdcd39d8444affc3f6";
+    // Endereço e configuração do token personalizado
+    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
+    const tokenSymbol = "SMALL"; // Substitua pelo símbolo oficial
+    const tokenDecimals = 18; // Número de decimais do token
+    const tokenImage = "https://example.com/token-logo.png"; // URL do logo do token
+
     const tokenABI = [
       {
         "constant": true,
@@ -153,6 +158,31 @@
       }
     }
 
+    async function addTokenToMetaMask() {
+      try {
+        const wasAdded = await ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: tokenAddress,
+              symbol: tokenSymbol,
+              decimals: tokenDecimals,
+              image: tokenImage,
+            },
+          },
+        });
+
+        if (wasAdded) {
+          console.log("Token adicionado com sucesso ao MetaMask!");
+        } else {
+          console.log("Usuário recusou adicionar o token.");
+        }
+      } catch (error) {
+        console.error("Erro ao adicionar o token ao MetaMask:", error);
+      }
+    }
+
     if (typeof window.ethereum !== 'undefined') {
       console.log('MetaMask está instalada!');
 
@@ -167,8 +197,8 @@
           }
 
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-
           console.log("Conta conectada:", accounts[0]);
+
           walletInfo.innerText = `Carteira conectada: ${accounts[0]}`;
           walletInfo.classList.add('fadeIn');
 
@@ -179,16 +209,13 @@
           const provider = new ethers.providers.Web3Provider(window.ethereum);
           const tokenContract = new ethers.Contract(tokenAddress, tokenABI, provider);
 
-          console.log("Contrato de token configurado:", tokenContract);
+          console.log("Contrato do token configurado:", tokenContract);
 
           try {
             const balance = await tokenContract.balanceOf(accounts[0]);
             console.log("Saldo bruto do token:", balance.toString());
 
-            const decimals = await tokenContract.decimals();
-            console.log("Decimais do token:", decimals);
-
-            const adjustedBalance = balance / Math.pow(10, decimals);
+            const adjustedBalance = balance / Math.pow(10, tokenDecimals);
             console.log("Saldo ajustado:", adjustedBalance);
 
             cryptoBalance.innerText = adjustedBalance.toFixed(4);
@@ -198,6 +225,10 @@
             balanceInfo.style.display = 'block';
             cryptoBalance.innerText = "N/A";
           }
+
+          // Adiciona o token personalizado ao MetaMask
+          await addTokenToMetaMask();
+
         } catch (error) {
           console.error("Erro ao conectar ou recuperar informações:", error);
         }
