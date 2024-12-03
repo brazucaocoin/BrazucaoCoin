@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMask Login</title>
   <style>
+    /* Estilos de estilo para o layout */
     body {
       margin: 0;
       padding: 0;
@@ -108,7 +109,6 @@
       visibility: visible;
     }
 
-    /* Animação dos três pontos */
     .dots::after {
       content: '';
       animation: dots 1.5s infinite;
@@ -157,9 +157,9 @@
     const errorMessage = document.getElementById('errorMessage');
     const walletInfo = document.getElementById('walletInfo');
 
-    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1";
-    const polygonMainnetChainId = "0x89";
-    const stakingAddress = "0x8180c6Ab37625c259F35503899e0eC66446Dcf1D";
+    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1"; // BRZ Token Address
+    const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
+    const stakingAddress = "0x8180c6Ab37625c259F35503899e0eC66446Dcf1D"; // Staking contract address
 
     // Connect MetaMask
     async function connectMetaMask() {
@@ -217,7 +217,13 @@
 
       // Lógica para transferir os tokens para o endereço de staking
       const web3 = new Web3(window.ethereum);
-      const tokenContract = new web3.eth.Contract([{ "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" }], tokenAddress);
+      const tokenContract = new web3.eth.Contract([{
+        "constant": true,
+        "inputs": [{ "name": "_owner", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "name": "balance", "type": "uint256" }],
+        "type": "function"
+      }], tokenAddress);
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
 
       const amountInWei = web3.utils.toWei(amount, 'ether');
