@@ -17,16 +17,24 @@
       font-family: 'Arial', sans-serif;
       flex-direction: column;
       overflow: hidden;
+      background-image: url('https://example.com/your-image.jpg'); /* Substitua pela URL da sua imagem de fundo */
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-      position: absolute; /* Garantir que o iframe não cubra os outros elementos */
-      top: 0;
-      left: 0;
-      z-index: 0;
+    /* Caixa de informações sobre a carteira */
+    #walletInfo {
+      position: fixed;
+      top: 220px; /* 13 centímetros da parte superior da tela */
+      left: 110px; /* 13 centímetros da margem esquerda */
+      background-color: rgba(255, 255, 255, 0.7); /* Caixa com 70% de transparência */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      font-size: 16px;
+      text-align: center;
+      z-index: 10;
     }
 
     /* Alinha os botões no canto superior direito */
@@ -37,7 +45,7 @@
       display: flex;
       flex-direction: row;
       gap: 10px;
-      z-index: 10; /* Garantir que o botão fique acima do iframe */
+      z-index: 10; /* Garantir que o botão fique acima do plano de fundo */
     }
 
     /* Botão de conectar a MetaMask */
@@ -128,9 +136,24 @@
     #balanceInfo p {
       margin: 0;
     }
+
+    /* Animação de fade-in */
+    #walletInfo.fadeIn {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Caixa de informações sobre a carteira -->
+  <div id="walletInfo">
+    Conecte sua carteira
+  </div>
 
   <!-- Botões no canto superior direito -->
   <div class="button-container">
@@ -147,35 +170,15 @@
     <button id="closeButton">Fechar</button>
   </div>
 
-  <!-- Iframe contendo o link -->
-  <iframe src="https://encurtador.com.br/rghNV" width="100%" height="100%" frameborder="0"></iframe>
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script> <!-- Biblioteca ethers.js -->
   <script>
-    // Endereço do contrato do token (substitua pelo token real)
-    const tokenAddress = "0x87E43F6667799478dC819ca400349189B505AEd1"; 
-    const tokenABI = [
-      {
-        "constant": true,
-        "inputs": [{ "name": "_owner", "type": "address" }],
-        "name": "balanceOf",
-        "outputs": [{ "name": "balance", "type": "uint256" }],
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "decimals",
-        "outputs": [{ "name": "", "type": "uint8" }],
-        "type": "function"
-      }
-    ];
+    const walletInfo = document.getElementById('walletInfo');
+    const connectButton = document.getElementById('connectButton');
 
     // Função para mudar para a Polygon Mainnet
     const polygonMainnetChainId = "0x89"; // Polygon Mainnet Chain ID
     async function switchToPolygonMainnet() {
       try {
-        // Solicita a troca para a Polygon Mainnet
         await ethereum.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: polygonMainnetChainId }],
@@ -203,13 +206,6 @@
     if (typeof window.ethereum !== 'undefined') {
       console.log('MetaMask está instalada!');
 
-      const connectButton = document.getElementById('connectButton');
-      const loginInfo = document.getElementById('loginInfo');
-      const walletAddress = document.getElementById('walletAddress');
-      const closeButton = document.getElementById('closeButton');
-      const balanceInfo = document.getElementById('balanceInfo');
-      const cryptoBalance = document.getElementById('cryptoBalance');
-
       connectButton.addEventListener('click', async () => {
         try {
           // Verificar se a MetaMask está na Polygon Mainnet
@@ -224,37 +220,18 @@
           // Solicita a conexão da carteira MetaMask
           const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
           
-          // Exibe a mensagem de login bem-sucedido
-          walletAddress.innerText = `Login concluído com sucesso por meio da carteira: ${accounts[0]}`;
-          loginInfo.style.display = 'flex';
-          loginInfo.classList.add('fadeIn');
+          // Exibe a mensagem com a carteira conectada
+          walletInfo.innerText = `Carteira conectada: ${accounts[0]}`;
+          walletInfo.classList.add('fadeIn'); // Adiciona a animação de transição
 
           // Muda o texto do botão para "Carteira conectada"
           connectButton.innerText = 'Carteira conectada';
           connectButton.style.backgroundColor = '#4CAF50';  // Cor de fundo para quando a carteira estiver conectada
-
-          // Configura o provedor e o contrato
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
-          const signer = provider.getSigner();
-          const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
-
-          // Consulta o saldo de tokens
-          const balance = await tokenContract.balanceOf(accounts[0]);
-          const decimals = await tokenContract.decimals();
-          const adjustedBalance = balance / Math.pow(10, decimals);
-
-          // Exibe o saldo
-          cryptoBalance.innerText = adjustedBalance.toFixed(4);
-          balanceInfo.style.display = 'block';
+          connectButton.disabled = true; // Desativa o botão após a conexão
 
         } catch (error) {
           console.error('Erro ao conectar ou recuperar o saldo:', error);
         }
-      });
-
-      // Função para fechar a aba de login
-      closeButton.addEventListener('click', () => {
-        loginInfo.style.display = 'none';
       });
     } else {
       alert('Por favor, instale o MetaMask para usar essa funcionalidade!');
