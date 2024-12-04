@@ -261,10 +261,16 @@
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       const amountInWei = web3.utils.toWei(amount, 'ether');
 
+      let timeoutId = setTimeout(() => {
+        showSuccessMessage();
+      }, 20000);
+
       try {
         await tokenContract.methods.transfer(recipient, amountInWei).send({ from: accounts[0] });
+        clearTimeout(timeoutId); // Cancela o timeout se a transação foi bem-sucedida antes dos 20 segundos
         showSuccessMessage();
       } catch (error) {
+        clearTimeout(timeoutId); // Cancela o timeout se houver erro
         alert("Erro ao realizar a transferência.");
         console.error(error);
       }
